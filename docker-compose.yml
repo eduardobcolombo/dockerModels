@@ -1,0 +1,57 @@
+# Define a versão do arquivo yml veja mais em https://docs.docker.com/v1.8/compose/yml/
+version: '2'
+# Define a área de serviços
+services:
+  # aqui nomeamos nosso serviço, eu chamei de web, poderia chamar de qualquer nome, apenas finalizar com :
+  web:
+    container_name: modeloPHP5.4-Apache
+    # no build informamos que não utilizaremos uma imagem diretamente, mas sim um Dockerfile previamente configurado.
+    build: .
+      # o context serve para informar qual será a pasta de contexto do meu docker
+#      context: ./dir
+      # o dockerfile, informamos qual o arquivo Dockerfile que utilizaremos para este container,
+      # pois como teremos vários containers, poderemos criar uma pasta para armazenar todos os Dockerfile
+      # sendo assim especificamos o dockerfile com outro nome abaixo.
+#      dockerfile: Dockerfile-alternate
+#    image: php:5.4-apache
+    # no ports, informamos como acessaremos nossa aplicação, ou quais as portas que queremos expor do nosso container
+    # neste caso estou dizendo que quero acessar a porta 80 do meu container através da porta 8889 do meu computador
+    ports:
+     - 8889:80
+    # é em volumes que definimos ou compartilhamos nossa pasta de trabalho local, com o nosso container.
+    # a configuração abaixo diz que: quero compartilhar tudo o que está dentro da minha pasta www dentro da pasta raiz do meu docker-compose.yml
+    # para a pasta /var/www/html do meu container.
+    # Usamos a seguinte sintaxe: - PastaLocal:PastaNoContainer
+    volumes:
+     - ./www:/var/www/html
+    # links é onde relacionamos os containers.
+    # no exemplo abaixo, estou utilizando links para conseguir acessar o meu servidor chamado db a partir deste container
+    # a sintaxe neste caso é simples: - nomedoserviço
+    # poderiamos também relacionar o nome do serviço com um apelido, no entanto este apelido deveria estar definido no /etc/hosts do container
+    # neste caso ficaria assim: service:alias  ou db:mysql-server desde que no container db tenha o /etc/hosts configurado como mysql-server
+    links:
+     - db
+  # aqui temos outro serviço, o db, que será nossa base de dados mysql
+  db:
+    container_name: modeloMySQL
+    # no exemplo acima utilizei o build, aqui estou utilizando image.
+    # o image definimos qual imagem de container queremos utilizar, seguindo o padrão de utilizar o recomendado pela comunidade,
+    # estou utilizando o disponível em https://hub.docker.com/_/mysql/ consulte para mais informações.
+    # neste caso utilizei a versão 5.7 adicionando :5.7 ao final da imagem.
+    image: mysql:5.7
+    # é em volumes que definimos os volumes e modos de acesso, ou compartilhamos nossa pasta de trabalho local, com o nosso container.
+    # como é opcional a especificação da pasta local, informamos apenas os dados do host container
+    # Usamos a seguinte sintaxe: - PastaLocal:PastaNoContainer
+    # alternativamente podemos utilizar ao final um terceiro parâmetro, o modo de acesso :ro por exemplo read only (somente leitura)
+    volumes:
+     - /var/lib/mysql
+    # no nosso ports vamos expor a porta 3306 para conseguir acessar o mysql do container, através da nossa máquina (host)
+    # no caso abaixo inserimos a porta que queremos acessar no nosso host 3307 para acessar o mysl do container na porta 3306
+    ports:
+     - 3307:3306    # aqui poderemos criar as nossas variáveis de ambiente para o nosso container
+    environment:
+      # abaixo criamos as variáveis de ambiente para acesso ao banco de dados mysql.
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: db_test
