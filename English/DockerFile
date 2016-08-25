@@ -1,0 +1,17 @@
+# In FROM we specified the image that we want to use, in this case, I used an oficial image of PHP.
+# available in https://hub.docker.com/_/php/ the instruction “FROM php” get the image on this link.
+# “:5.4-apache”, get the specific version of PHP with Apache
+# Look the link to other available versions.
+FROM php:5.4-apache
+# In MAINTAINER we can specify the creator and that keeps this dockerfile version.
+MAINTAINER Eduardo Colombo <eduardobcolombo@gmail.com>
+# The RUN allows to execute commands within the container, the docker-php-ext-install installs PHP  extensions within the container.
+# You can also add after other extensions desired.
+RUN docker-php-ext-install mysql mysqli pdo pdo_mysql
+# Maybe you want to install intl then
+RUN apt-get install -y libicu-dev
+RUN apt-get update && apt-get install -y zlib1g-dev libicu-dev g++
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install intl
+# And mbstring you may need
+RUN docker-php-ext-install mbstring
